@@ -150,7 +150,7 @@ export default function LoginPage() {
                   Senha
                 </label>
                 <Link
-                  href="/recuperar-senha"
+                  href={"/recuperar-senha" as never}
                   className="text-xs text-primary-600 hover:text-primary-700 hover:underline transition-colors"
                   tabIndex={-1}
                 >
