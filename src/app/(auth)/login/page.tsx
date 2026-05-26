@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, LogIn, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
+import { signinUser } from "@/lib/supabase/auth-helpers";
 
 // ---------------------------------------------------------------------------
 // Schema de validação
@@ -32,6 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 // ---------------------------------------------------------------------------
 
 export default function LoginPage() {
+  const router = useRouter();
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -51,18 +53,36 @@ export default function LoginPage() {
   async function onSubmit(data: LoginFormValues) {
     setErro(null);
     try {
-      // TODO: Integrar com Supabase Auth
-      // const supabase = createClient()
-      // const { error } = await supabase.auth.signInWithPassword({
-      //   email: data.email,
-      //   password: data.senha,
-      // })
-      // if (error) throw error
-      // router.push('/dashboard')
+      const result = await signinUser(data.email, data.senha);
 
-      // Simulação de loading (remover quando integrar)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Login:", data.email);
+      if (result.error) {
+        const message = result.error.message;
+        setErro(
+          message.includes("Invalid login credentials")
+            ? "E-mail ou senha incorretos. Verifique seus dados e tente novamente."
+            : message
+        );
+        return;
+      }
+
+      if (!result.user) {
+        setErro("Falha ao autenticar. Tente novamente.");
+        return;
+      }
+
+      // Redireciona conforme estado do usuário
+      const primeiroAcesso = result.user.user_metadata?.primeiro_acesso === true;
+      const mfaObrigatorio = result.user.user_metadata?.mfa_obrigatorio === true;
+      const mfaVerificado = result.user.user_metadata?.mfa_verificado === true;
+
+      if (primeiroAcesso) {
+        router.push("/primeiro-acesso");
+      } else if (mfaObrigatorio && !mfaVerificado) {
+        router.push("/mfa");
+      } else {
+        router.push("/dashboard");
+      }
+      router.refresh();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erro ao realizar login";

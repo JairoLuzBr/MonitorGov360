@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "seed-test": "npx ts-node --esm scripts/seed-test-user.ts",
+    "seed-perfis": "npx ts-node --esm scripts/seed-test-users.ts",
     "test": "vitest",
     "test:unit": "vitest --run",
     "test:unit:watch": "vitest --watch",

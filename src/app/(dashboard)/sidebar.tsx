@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -12,29 +12,59 @@ import {
   LogOut,
   Menu,
   X,
+  Loader2,
+  ClipboardList,
+  Camera,
+  Wallet,
+  History,
 } from "lucide-react";
 import { useState } from "react";
+import { signoutUser } from "@/lib/supabase/auth-helpers";
+import { NotificationBell } from "@/components/notificacoes/notification-bell";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/acoes", label: "Ações", icon: FolderOpen },
-  { href: "/dashboard/relatorios", label: "Relatórios", icon: BarChart3 },
+  { href: "/dashboard/questionarios", label: "Questionários", icon: ClipboardList },
+  { href: "/dashboard/evidencias", label: "Evidências", icon: Camera },
+  { href: "/dashboard/orcamento", label: "Orçamento", icon: Wallet },
   { href: "/dashboard/alertas", label: "Alertas", icon: Bell },
+  { href: "/dashboard/relatorios", label: "Relatórios", icon: BarChart3 },
+  { href: "/dashboard/auditoria", label: "Auditoria", icon: History },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ];
 
+function useSignOut() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  async function handleSignOut() {
+    setLoading(true);
+    try {
+      await signoutUser();
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  }
+
+  return { handleSignOut, loading };
+}
+
 export function Sidebar() {
   const pathname = usePathname();
+  const { handleSignOut, loading } = useSignOut();
 
   return (
     <aside className="w-64 bg-primary-900 text-white flex flex-col shrink-0 hidden lg:flex">
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <ShieldCheck className="h-6 w-6 text-secondary-400" />
           <span className="font-bold text-lg">
             MonitorGov<span className="text-secondary-400">360</span>
           </span>
         </Link>
+        <NotificationBell />
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-1">
@@ -59,12 +89,15 @@ export function Sidebar() {
 
       <div className="px-4 py-4 border-t border-white/10">
         <button
+          onClick={handleSignOut}
+          disabled={loading}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
-                     text-white/60 hover:text-white hover:bg-white/10 transition-colors duration-150"
+                     text-white/60 hover:text-white hover:bg-white/10 transition-colors duration-150
+                     disabled:opacity-60 disabled:cursor-not-allowed"
           type="button"
         >
-          <LogOut className="h-5 w-5" />
-          Sair
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogOut className="h-5 w-5" />}
+          {loading ? "Saindo..." : "Sair"}
         </button>
       </div>
     </aside>
@@ -84,9 +117,12 @@ export function MobileHeader() {
             MonitorGov<span className="text-secondary-400">360</span>
           </span>
         </Link>
-        <button type="button" aria-label="Abrir menu" onClick={() => setOpen(true)}>
-          <Menu className="h-6 w-6 text-white" />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button type="button" aria-label="Abrir menu" onClick={() => setOpen(true)}>
+            <Menu className="h-6 w-6 text-white" />
+          </button>
+        </div>
       </header>
 
       {open && (
