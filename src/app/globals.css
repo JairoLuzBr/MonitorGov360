@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* -------------------------------------------------------------------------
+       Cores base do design system MonitorGov360
+       Azul Governo: #1E3A5F | Dourado: #C8941A
+    ------------------------------------------------------------------------- */
+
+    /* shadcn/ui CSS variables — modo claro */
+    --background: 0 0% 100%;
+    --foreground: 215 50% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 50% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 50% 20%;
+
+    --primary: 215 55% 24%;          /* #1E3A5F */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 38 76% 45%;         /* #C8941A */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 46%;
+
+    --accent: 38 76% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 215 55% 24%;
+
+    --radius: 0.5rem;
+
+    /* Cores customizadas do projeto */
+    --gov-blue: #1E3A5F;
+    --gov-gold: #C8941A;
+    --gov-blue-light: #2A5A9F;
+    --gov-blue-dark: #122340;
+    --gov-gold-light: #E8B422;
+    --gov-gold-dark: #9A7014;
+  }
+
+  .dark {
+    --background: 215 50% 8%;
+    --foreground: 210 20% 98%;
+
+    --card: 215 45% 12%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 45% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 215 55% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 38 65% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 215 30% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 38 65% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 30% 20%;
+    --input: 215 30% 20%;
+    --ring: 215 55% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Botão primário padrão do governo */
+  .btn-gov-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-md
+           transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50
+           disabled:cursor-not-allowed;
+  }
+
+  /* Card com borda azul governo */
+  .card-gov {
+    @apply bg-white rounded-lg border border-border shadow-sm p-6;
+  }
+
+  /* Badge de status */
+  .badge-status {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar personalizada */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+}
