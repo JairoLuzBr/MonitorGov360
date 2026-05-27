@@ -4,8 +4,384 @@
 
    ▲ Next.js 15.5.18
    - Local:        http://localhost:3000
-   - Network:      http://10.125.125.137:3000
+   - Network:      http://192.168.0.15:3000
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 2.2s
+ ✓ Ready in 3.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 703ms (169 modules)
+ ○ Compiling / ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (101kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (231kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled / in 4.8s (714 modules)
+ GET / 200 in 5825ms
+ ✓ Compiled in 1447ms (289 modules)
+ GET / 200 in 395ms
+ ✓ Compiled in 467ms (275 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 2.7s (978 modules)
+ GET /login 200 in 4938ms
+ GET /login 200 in 5022ms
+ GET /login 200 in 4717ms
+ GET /login 200 in 4946ms
+ GET /login?redirectTo=%2Fdashboard 200 in 4925ms
+ GET /login 200 in 5119ms
+ ○ Compiling /dashboard ...
+ GET /login 200 in 1770ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 2356ms
+ ✓ Compiled /dashboard in 19.9s (2141 modules)
+ GET /login 200 in 21773ms
+ GET /login 200 in 7293ms
+ GET /login?redirectTo=%2Fdashboard 200 in 6847ms
+ GET /login 200 in 6494ms
+ GET /login 200 in 6861ms
+ GET / 200 in 7058ms
+ GET / 200 in 823ms
+ GET /dashboard 200 in 152ms
+ GET /dashboard 200 in 164ms
+ GET /dashboard 200 in 847ms
+ GET / 200 in 92ms
+ GET / 200 in 77ms
+ GET /login 200 in 812ms
+ GET /login 200 in 787ms
+ GET /login?redirectTo=%2Fdashboard 200 in 1885ms
+ GET /login 200 in 1992ms
+ GET /login 200 in 1994ms
+ GET /login 200 in 1995ms
+ GET /dashboard 200 in 1364ms
+ GET /primeiro-acesso 200 in 1360ms
+ GET /dashboard 200 in 1723ms
+ GET /login 200 in 3624ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 4044ms
+ GET /login 200 in 3900ms
+ GET /primeiro-acesso 200 in 4701ms
+ GET /dashboard 200 in 5224ms
+ GET /dashboard 200 in 4813ms
+ GET /dashboard 200 in 385ms
+ GET /login 200 in 2764ms
+ GET /dashboard 200 in 1655ms
+ GET /login?redirectTo=%2Fdashboard 200 in 1449ms
+ GET /login 200 in 1385ms
+ GET / 200 in 1539ms
+ GET /login 200 in 1377ms
+ GET / 200 in 491ms
+ GET /dashboard 200 in 85ms
+ GET /dashboard 200 in 123ms
+ GET /dashboard 200 in 177ms
+ GET / 200 in 55ms
+ GET / 200 in 101ms
+ GET /login 200 in 226ms
+ GET /login 200 in 84ms
+ GET /dashboard 200 in 45ms
+ GET /dashboard 200 in 57ms
+ GET /login 200 in 104ms
+ GET /primeiro-acesso 200 in 91ms
+ GET /primeiro-acesso 200 in 68ms
+ GET /login 200 in 108ms
+ GET /login 200 in 114ms
+ GET /login 200 in 116ms
+ GET /login?redirectTo=%2Fdashboard 200 in 117ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 92ms
+ GET /login 200 in 92ms
+ GET /dashboard 200 in 34ms
+ GET /dashboard 200 in 49ms
+ GET /login 200 in 45ms
+ GET /login 200 in 49ms
+ GET /login 200 in 88ms
+ GET /dashboard 200 in 44ms
+ GET /dashboard 200 in 165ms
+ GET /dashboard 200 in 85ms
+ GET /login 200 in 90ms
+ GET /dashboard 200 in 56ms
+ GET /dashboard 200 in 80ms
+ GET /dashboard 200 in 138ms
+ GET /login 200 in 86ms
+ GET /dashboard 200 in 36ms
+ GET /dashboard 200 in 77ms
+ ○ Compiling /dashboard/acoes ...
+ ✓ Compiled /dashboard/acoes in 1807ms (2151 modules)
+ GET /dashboard/acoes 200 in 2859ms
+ GET /login 200 in 144ms
+ GET /dashboard 200 in 57ms
+ GET /dashboard 200 in 209ms
+ ○ Compiling /dashboard/alertas ...
+ ✓ Compiled /dashboard/alertas in 1868ms (2166 modules)
+ GET /dashboard/alertas 200 in 3019ms
+ ○ Compiling /dashboard/evidencias ...
+ ✓ Compiled /dashboard/evidencias in 1692ms (2195 modules)
+ GET /dashboard/evidencias 200 in 2366ms
+ GET /login 200 in 2264ms
+ GET /dashboard 200 in 138ms
+ GET /dashboard 200 in 124ms
+ GET /dashboard/evidencias 200 in 806ms
+ ○ Compiling /dashboard/evidencias/upload ...
+ ✓ Compiled /dashboard/evidencias/upload in 3.1s (2214 modules)
+ GET /dashboard/evidencias/upload 200 in 3668ms
+ GET /login 200 in 2739ms
+ GET /dashboard 200 in 108ms
+ GET /dashboard 200 in 118ms
+ ○ Compiling /dashboard/questionarios ...
+ ✓ Compiled /dashboard/questionarios in 1823ms (2223 modules)
+ GET /dashboard/questionarios 200 in 3015ms
+ GET /login 200 in 265ms
+ GET /dashboard 200 in 99ms
+ GET /dashboard 200 in 118ms
+ GET /dashboard 200 in 95ms
+ ○ Compiling /dashboard/orcamento ...
+ ✓ Compiled /dashboard/orcamento in 3s (2242 modules)
+ GET /dashboard/orcamento 200 in 4116ms
+ GET /login 200 in 224ms
+ GET /dashboard 200 in 75ms
+ GET /dashboard 200 in 110ms
+ ○ Compiling /dashboard/auditoria ...
+ ✓ Compiled /dashboard/auditoria in 4.6s (2250 modules)
+ GET /dashboard/auditoria 200 in 6229ms
+ GET /login 200 in 226ms
+ GET /dashboard 200 in 96ms
+ GET /dashboard 200 in 94ms
+ ○ Compiling /dashboard/relatorios ...
+ ✓ Compiled /dashboard/relatorios in 2.3s (2256 modules)
+ GET /dashboard/relatorios 200 in 3141ms
+ GET /login 200 in 142ms
+ GET /dashboard 200 in 53ms
+ GET /dashboard 200 in 73ms
+ ○ Compiling /dashboard/configuracoes ...
+ ✓ Compiled /dashboard/configuracoes in 878ms (2263 modules)
+ GET /dashboard/configuracoes 200 in 1399ms
+ GET /login 200 in 145ms
+ GET /dashboard 200 in 53ms
+ GET /dashboard 200 in 140ms
+ GET /dashboard 200 in 365ms
+ GET /dashboard/acoes 200 in 249ms
+ GET /login 200 in 105ms
+ GET /dashboard 200 in 31ms
+ GET /dashboard 200 in 68ms
+ GET /dashboard 200 in 128ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 297ms
+ GET / 200 in 126ms
+ GET /login 200 in 139ms
+ GET /login?redirectTo=%2Fdashboard 200 in 94ms
+ GET / 200 in 80ms
+ GET / 200 in 60ms
+ GET / 200 in 53ms
+ GET /login 200 in 135ms
+ GET /login 200 in 94ms
+ GET /dashboard 200 in 58ms
+ GET /dashboard 200 in 49ms
+ GET /login 200 in 120ms
+ ○ Compiling /primeiro-acesso ...
+ ✓ Compiled /primeiro-acesso in 656ms (1199 modules)
+ GET /primeiro-acesso 200 in 803ms
+ GET /primeiro-acesso 200 in 56ms
+ GET /login 200 in 231ms
+ GET /login 200 in 90ms
+ GET /login 200 in 110ms
+ GET /login?redirectTo=%2Fdashboard 200 in 84ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 89ms
+ GET /login 200 in 85ms
+ GET /dashboard 200 in 101ms
+ GET /dashboard 200 in 77ms
+ GET /login 200 in 45ms
+ GET /login 200 in 49ms
+ GET /login 200 in 83ms
+ GET /dashboard 200 in 31ms
+ GET /dashboard 200 in 50ms
+ GET /dashboard 200 in 564ms
+ GET /login 200 in 83ms
+ GET /dashboard 200 in 29ms
+ GET /dashboard 200 in 78ms
+ GET /dashboard 200 in 120ms
+ GET / 200 in 99ms
+ GET /login 200 in 80ms
+ GET /login?redirectTo=%2Fdashboard 200 in 86ms
+ GET / 200 in 98ms
+ GET / 200 in 80ms
+ GET / 200 in 59ms
+ GET /login 200 in 86ms
+ GET /dashboard 200 in 30ms
+ GET /dashboard 200 in 72ms
+ GET /dashboard 200 in 130ms
+ GET / 200 in 51ms
+ GET / 200 in 48ms
+ GET /login 200 in 80ms
+ GET /login 200 in 83ms
+ GET /dashboard 200 in 369ms
+ GET /dashboard 200 in 59ms
+ GET /login 200 in 93ms
+ GET /primeiro-acesso 200 in 36ms
+ GET /primeiro-acesso 200 in 56ms
+ GET /login 200 in 98ms
+ GET /login 200 in 99ms
+ GET /login 200 in 95ms
+ GET /login?redirectTo=%2Fdashboard 200 in 84ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 93ms
+ GET /login 200 in 84ms
+ GET /dashboard 200 in 33ms
+ GET /dashboard 200 in 66ms
+ GET /login 200 in 32ms
+ GET /login 200 in 48ms
+ GET /login 200 in 87ms
+ GET /dashboard 200 in 38ms
+ GET /dashboard 200 in 51ms
+ GET /dashboard 200 in 117ms
+ GET /login 200 in 95ms
+ GET /dashboard 200 in 35ms
+ GET /dashboard 200 in 143ms
+ GET /dashboard 200 in 133ms
+ GET / 200 in 161ms
+ GET /login 200 in 157ms
+ GET /login?redirectTo=%2Fdashboard 200 in 155ms
+ GET / 200 in 109ms
+ GET / 200 in 133ms
+ GET / 200 in 158ms
+ GET /login 200 in 151ms
+ GET /login 200 in 150ms
+ GET /dashboard 200 in 163ms
+ GET /dashboard 200 in 131ms
+ GET /login 200 in 152ms
+ GET /primeiro-acesso 200 in 83ms
+ GET /primeiro-acesso 200 in 70ms
+ GET /login 200 in 208ms
+ GET /login 200 in 149ms
+ GET /login 200 in 135ms
+ GET /login?redirectTo=%2Fdashboard 200 in 144ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 142ms
+ GET /login 200 in 138ms
+ GET /dashboard 200 in 107ms
+ GET /dashboard 200 in 76ms
+ GET /login 200 in 60ms
+ GET /login 200 in 100ms
+ GET /login 200 in 200ms
+ GET /dashboard 200 in 50ms
+ GET /dashboard 200 in 117ms
+ GET /dashboard 200 in 225ms
+ GET /login 200 in 106ms
+ GET /dashboard 200 in 37ms
+ GET /dashboard 200 in 177ms
+ GET /dashboard 200 in 139ms
+ GET / 200 in 100ms
+ GET /login 200 in 85ms
+ GET /login?redirectTo=%2Fdashboard 200 in 99ms
+ GET / 200 in 58ms
+ GET /dashboard/acoes 200 in 79ms
+ GET / 200 in 109ms
+ GET / 200 in 133ms
+ GET /login 200 in 148ms
+ GET /login 200 in 180ms
+ GET /dashboard 200 in 67ms
+ GET /dashboard 200 in 89ms
+ GET /login 200 in 247ms
+ GET /primeiro-acesso 200 in 56ms
+ GET /primeiro-acesso 200 in 116ms
+ GET /login 200 in 106ms
+ GET /login 200 in 91ms
+ GET /login 200 in 87ms
+ GET /login?redirectTo=%2Fdashboard 200 in 94ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 90ms
+ GET /login 200 in 91ms
+ GET /dashboard 200 in 38ms
+ GET /dashboard 200 in 59ms
+ GET /login 200 in 33ms
+ GET /login 200 in 49ms
+ GET /login 200 in 107ms
+ GET /dashboard 200 in 37ms
+ GET /dashboard 200 in 54ms
+ GET /dashboard 200 in 153ms
+ GET /login 200 in 94ms
+ GET /dashboard 200 in 51ms
+ GET /dashboard 200 in 114ms
+ GET /dashboard 200 in 108ms
+ GET /login 200 in 113ms
+ GET /dashboard 200 in 40ms
+ GET /dashboard 200 in 45ms
+ GET /dashboard/acoes 200 in 120ms
+ GET /login 200 in 94ms
+ GET /dashboard 200 in 35ms
+ GET /dashboard 200 in 49ms
+ ○ Compiling /dashboard/alertas ...
+ ✓ Compiled /dashboard/alertas in 961ms (1185 modules)
+ GET /dashboard/alertas 200 in 2263ms
+ GET /login 200 in 156ms
+ GET /dashboard 200 in 59ms
+ GET /dashboard 200 in 70ms
+ ✓ Compiled /dashboard/evidencias in 447ms (1201 modules)
+ GET /dashboard/evidencias 200 in 1319ms
+ GET /login 200 in 128ms
+ GET /dashboard 200 in 83ms
+ GET /dashboard 200 in 79ms
+ ✓ Compiled /dashboard/questionarios in 428ms (1208 modules)
+ GET /dashboard/questionarios 200 in 949ms
+ GET /login 200 in 99ms
+ GET /dashboard 200 in 62ms
+ GET /dashboard 200 in 66ms
+ ○ Compiling /dashboard/orcamento ...
+ ✓ Compiled /dashboard/orcamento in 1588ms (1219 modules)
+ GET /dashboard/orcamento 200 in 2500ms
+ GET /login 200 in 125ms
+ GET /dashboard 200 in 68ms
+ GET /dashboard 200 in 77ms
+ ○ Compiling /dashboard/auditoria ...
+ ✓ Compiled /dashboard/auditoria in 1137ms (1228 modules)
+ GET /dashboard/auditoria 200 in 1907ms
+ GET /login 200 in 273ms
+ GET /dashboard 200 in 44ms
+ GET /dashboard 200 in 49ms
+ ○ Compiling /dashboard/relatorios ...
+ ✓ Compiled /dashboard/relatorios in 1172ms (1234 modules)
+ GET /dashboard/relatorios 200 in 1893ms
+ GET /login 200 in 226ms
+ GET /dashboard 200 in 76ms
+ GET /dashboard 200 in 88ms
+ ○ Compiling /dashboard/configuracoes ...
+ ✓ Compiled /dashboard/configuracoes in 663ms (1241 modules)
+ GET /dashboard/configuracoes 200 in 1379ms
+ GET /login 200 in 218ms
+ GET /dashboard 200 in 81ms
+ GET /dashboard 200 in 101ms
+ GET /dashboard 200 in 593ms
+ GET /dashboard/questionarios 200 in 113ms
+ GET /dashboard/acoes 200 in 126ms
+ GET /dashboard/configuracoes 200 in 131ms
+ GET /login 200 in 132ms
+ GET /dashboard 200 in 96ms
+ GET /dashboard 200 in 81ms
+ GET /dashboard 200 in 173ms
+ GET /login?redirectTo=%2Fdashboard%2Falertas 200 in 199ms
+ GET / 200 in 150ms
+ GET /login 200 in 140ms
+ GET /login?redirectTo=%2Fdashboard 200 in 134ms
+ GET / 200 in 116ms
+ GET /dashboard 200 in 44ms
+ GET /dashboard/orcamento 200 in 87ms
+ GET /dashboard/alertas 200 in 76ms
+ ○ Compiling /dashboard/alertas/[id] ...
+ ✓ Compiled /dashboard/alertas/[id] in 2.5s (2257 modules)
+ GET /dashboard/alertas/al_001 200 in 3787ms
+ GET /dashboard/acoes 200 in 69ms
+ GET /dashboard/questionarios 200 in 167ms
+ GET /dashboard/acoes 200 in 70ms
+ GET /dashboard/acoes 200 in 271ms
+ GET /dashboard/questionarios 200 in 93ms
+ ○ Compiling /dashboard/questionarios/[id] ...
+ ✓ Compiled /dashboard/questionarios/[id] in 6.1s (2226 modules)
+ GET /dashboard/questionarios/qc_001 200 in 7742ms
+ GET /login 200 in 380ms
+ GET /login 200 in 87ms
+AuthApiError: Invalid Refresh Token: Refresh Token Not Found {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+AuthApiError: Invalid Refresh Token: Refresh Token Not Found {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+ GET /login 200 in 675ms
+ GET / 200 in 195ms
+ ✓ Compiled in 1307ms (1037 modules)
+ GET /login 200 in 237ms
+ GET /dashboard 200 in 183ms
+ GET /dashboard 200 in 80ms
+ GET /dashboard/acoes 200 in 115ms
