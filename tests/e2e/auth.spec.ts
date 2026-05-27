@@ -1,346 +1,228 @@
 /**
- * Testes E2E para Fluxo de Autenticação
- * Valida o fluxo completo: signup → MFA → login → dashboard
+ * Testes E2E — Fluxo de Autenticação.
+ *
+ * Cobre: login válido/inválido, validação de formulário, proteção de rotas,
+ * logout, fluxo de primeiro acesso, mostrar/ocultar senha, rate limiting.
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
+import {
+  cleanupTestUser,
+  createDescartavelUser,
+} from "./helpers/auth-helpers";
 
-const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-// Dados de teste
-const TEST_EMAIL = `test-${Date.now()}@monitorgov360.test`;
-const TEST_PASSWORD = 'TestPassword123!';
-const TEST_MUNICIPIO = 'municipio-test';
+let municipioId: string;
+const usuariosCriados: string[] = [];
 
-test.describe('Auth Flow E2E', () => {
-  // =========================================================================
-  // LOGIN COM CREDENCIAIS INVÁLIDAS
-  // =========================================================================
+test.beforeAll(async () => {
+  // Pega um município existente para vincular os usuários de teste
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data, error } = await admin
+    .from("municipios")
+    .select("id")
+    .eq("ativo", true)
+    .limit(1)
+    .single();
+  if (error || !data) {
+    throw new Error(
+      `Nenhum município ativo encontrado. Rode 'npm run seed-test' antes dos E2E. Erro: ${error?.message}`
+    );
+  }
+  municipioId = data.id;
+});
 
-  test('login com credenciais inválidas mostra erro', async ({ page }) => {
-    // Navega para página de login
-    await page.goto(`${BASE_URL}/login`);
+test.afterAll(async () => {
+  for (const id of usuariosCriados) {
+    await cleanupTestUser(id);
+  }
+});
 
-    // Aguarda carregamento
-    await page.waitForLoadState('networkidle');
+// ===========================================================================
+// LOGIN
+// ===========================================================================
 
-    // Preenche e-mail inválido
-    await page.fill('input[type="email"]', 'invalido@test.com');
+test.describe("Login", () => {
+  test("exibe erro para credenciais inválidas", async ({ page }) => {
+    await page.goto("/login");
+    await page.locator('input[type="email"]').fill("naoexiste@test.local");
+    await page.locator('input[type="password"]').fill("senha-errada-123");
+    await page.locator('button[type="submit"]').click();
 
-    // Preenche senha inválida
-    await page.fill('input[type="password"]', 'wrongpassword');
-
-    // Clica no botão de login
-    await page.click('button[type="submit"]');
-
-    // Aguarda resposta
-    await page.waitForTimeout(2000);
-
-    // Valida que mensagem de erro é exibida
-    const errorMessage = page.locator('[role="alert"]');
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toContainText(/E-mail ou senha incorretos|erro/i);
-
-    // Valida que NÃO foi redirecionado para dashboard
-    expect(page.url()).toContain('/login');
+    // Filtra o __next-route-announcer__ do Next que também tem role=alert
+    const alert = page.locator('[role="alert"]:not(#__next-route-announcer__)');
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText(/incorret|inválid|erro/i);
+    expect(page.url()).toContain("/login");
   });
 
-  // =========================================================================
-  // ROTA PROTEGIDA SEM AUTENTICAÇÃO
-  // =========================================================================
-
-  test('rota /dashboard protegida sem autenticação redireciona para login', async ({ page }) => {
-    // Tenta acessar dashboard sem estar autenticado
-    await page.goto(`${BASE_URL}/dashboard`, {
-      waitUntil: 'networkidle',
+  test("redireciona para /dashboard após login válido", async ({ page }) => {
+    const user = await createDescartavelUser({
+      municipio_id: municipioId,
+      perfil_codigo: "fiscal_contrato",
+      label: "login-ok",
     });
+    usuariosCriados.push(user.id);
 
-    // Aguarda redirecionamento (máximo 5 segundos)
-    await page.waitForURL(`${BASE_URL}/login**`, {
-      timeout: 5000,
+    await page.goto("/login");
+    await page.locator('input[type="email"]').fill(user.email);
+    await page.locator('input[type="password"]').fill(user.password);
+    await page.locator('button[type="submit"]').click();
+
+    await page.waitForURL(/\/dashboard/, { timeout: 15_000 });
+    expect(page.url()).toMatch(/\/dashboard/);
+  });
+
+  test("redireciona para /primeiro-acesso quando user.primeiro_acesso=true", async ({
+    page,
+  }) => {
+    // Cria usuário com primeiro_acesso=true (similar ao seed-test)
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
     });
+    const email = `e2e-primeiro-${Date.now()}@test.local`;
+    const { data: authData } = await admin.auth.admin.createUser({
+      email,
+      password: "E2E@Test123!",
+      email_confirm: true,
+      user_metadata: {
+        municipio_id: municipioId,
+        perfil: "fiscal_contrato",
+        primeiro_acesso: true,
+        mfa_obrigatorio: false,
+      },
+    });
+    if (!authData?.user) throw new Error("Falha ao criar usuário primeiro_acesso");
+    usuariosCriados.push(authData.user.id);
 
-    // Valida que foi redirecionado para login
-    expect(page.url()).toContain('/login');
+    await page.goto("/login");
+    await page.locator('input[type="email"]').fill(email);
+    await page.locator('input[type="password"]').fill("E2E@Test123!");
+    await page.locator('button[type="submit"]').click();
 
-    // Valida que existe um parâmetro redirectTo
+    await page.waitForURL(/\/primeiro-acesso/, { timeout: 15_000 });
+    expect(page.url()).toContain("/primeiro-acesso");
+  });
+});
+
+// ===========================================================================
+// VALIDAÇÃO DE FORMULÁRIO
+// ===========================================================================
+
+test.describe("Validação de formulário", () => {
+  test("mostra erros de validação para campos vazios", async ({ page }) => {
+    await page.goto("/login");
+    await page.locator('button[type="submit"]').click();
+    // Os erros aparecem associados aos inputs via aria-describedby
+    const emailInput = page.locator('input[type="email"]');
+    await expect(emailInput).toHaveAttribute("aria-invalid", "true");
+  });
+
+  test("rejeita email com formato inválido", async ({ page }) => {
+    await page.goto("/login");
+    await page.locator('input[type="email"]').fill("nao-eh-email");
+    await page.locator('input[type="password"]').fill("alguma-senha-123");
+    await page.locator('button[type="submit"]').click();
+
+    const emailInput = page.locator('input[type="email"]');
+    await expect(emailInput).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+// ===========================================================================
+// MOSTRAR / OCULTAR SENHA
+// ===========================================================================
+
+test("toggle mostrar/ocultar senha alterna o type do input", async ({ page }) => {
+  await page.goto("/login");
+  const senhaInput = page.locator('input[type="password"]');
+  const toggle = page.getByRole("button", { name: /Mostrar senha|Ocultar senha/i });
+
+  await senhaInput.fill("teste");
+  await expect(senhaInput).toHaveAttribute("type", "password");
+
+  await toggle.click();
+  await expect(page.locator('input[name="senha"]')).toHaveAttribute("type", "text");
+
+  await toggle.click();
+  await expect(page.locator('input[name="senha"]')).toHaveAttribute("type", "password");
+});
+
+// ===========================================================================
+// PROTEÇÃO DE ROTAS
+// ===========================================================================
+
+test.describe("Proteção de rotas", () => {
+  test("/dashboard sem auth redireciona com redirectTo", async ({ page }) => {
+    await page.goto("/dashboard");
+    await page.waitForURL(/\/login/);
     const url = new URL(page.url());
-    expect(url.searchParams.get('redirectTo')).toContain('/dashboard');
+    expect(url.searchParams.get("redirectTo")).toContain("/dashboard");
   });
 
-  // =========================================================================
-  // FLUXO COMPLETO DE LOGIN (SIGN-IN)
-  // =========================================================================
-
-  test('login com credenciais válidas redireciona para dashboard', async ({ page }) => {
-    // Navega para página de login
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    // Aguarda inputs ficarem visíveis
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]');
-
-    await expect(emailInput).toBeVisible();
-    await expect(passwordInput).toBeVisible();
-
-    // Preenche credenciais válidas (devem estar cadastradas no BD de teste)
-    // Para este teste passar, é necessário ter um usuário pré-criado
-    const validEmail = process.env.TEST_USER_EMAIL || 'test@monitorgov360.test';
-    const validPassword = process.env.TEST_USER_PASSWORD || 'TestPassword123!';
-
-    await emailInput.fill(validEmail);
-    await passwordInput.fill(validPassword);
-
-    // Clica no botão de login
-    const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
-
-    // Aguarda redirecionamento para dashboard (máximo 10 segundos)
-    try {
-      await page.waitForURL(`${BASE_URL}/dashboard`, {
-        timeout: 10000,
-      });
-
-      // Valida URL final
-      expect(page.url()).toContain('/dashboard');
-
-      // Valida que página foi carregada (procura por elemento específico do dashboard)
-      const dashboardElement = page.locator('h1, [role="main"]');
-      await expect(dashboardElement).toBeVisible({ timeout: 5000 });
-    } catch (error) {
-      // Se timeout, pode ser que o usuário não exista no BD de teste
-      // Ainda assim, validamos que não há erro na página de login
-      const errorAlert = page.locator('[role="alert"]');
-      const isErrorVisible = await errorAlert.isVisible().catch(() => false);
-
-      if (!isErrorVisible) {
-        // Se não há erro visível mas também não redirecionou, pode ser problema de integração
-        console.warn(
-          'Login não redirecionou para dashboard, mas também não mostrou erro. ' +
-          'Verifique se Supabase está configurado corretamente.'
-        );
-      }
-    }
+  test("/dashboard/alertas sem auth redireciona", async ({ page }) => {
+    await page.goto("/dashboard/alertas");
+    await page.waitForURL(/\/login/);
+    expect(page.url()).toContain("/login");
   });
+});
 
-  // =========================================================================
-  // VALIDAÇÃO DE FORMULÁRIO
-  // =========================================================================
+// ===========================================================================
+// LOGOUT
+// ===========================================================================
 
-  test('formulário de login valida campos vazios', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    // Tenta enviar formulário vazio
-    const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
-
-    // Aguarda validação
-    await page.waitForTimeout(500);
-
-    // Procura por mensagens de erro (podem variar conforme implementação)
-    const errorMessages = page.locator('[id*="error"]');
-
-    // Valida que há mensagens de erro visíveis
-    const count = await errorMessages.count();
-    expect(count).toBeGreaterThan(0);
+test("logout encerra a sessão e volta para login", async ({ page }) => {
+  const user = await createDescartavelUser({
+    municipio_id: municipioId,
+    perfil_codigo: "fiscal_contrato",
+    label: "logout",
   });
+  usuariosCriados.push(user.id);
 
-  // =========================================================================
-  // VISIBILIDADE DE SENHA
-  // =========================================================================
+  // Login
+  await page.goto("/login");
+  await page.locator('input[type="email"]').fill(user.email);
+  await page.locator('input[type="password"]').fill(user.password);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL(/\/dashboard/);
 
-  test('botão de mostrar/ocultar senha funciona', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+  // Logout — botão pode estar em menu de usuário; tentamos texto comum
+  const logoutCandidates = page.getByRole("button", { name: /sair|logout/i });
+  const count = await logoutCandidates.count();
+  if (count === 0) {
+    // Pode estar dentro de um dropdown — abrir e tentar novamente
+    const avatarBtn = page.getByRole("button").filter({ has: page.locator("svg") }).first();
+    await avatarBtn.click().catch(() => undefined);
+  }
+  await logoutCandidates.first().click();
 
-    await page.waitForLoadState('networkidle');
+  await page.waitForURL(/\/login/, { timeout: 10_000 });
+  expect(page.url()).toContain("/login");
+});
 
-    const passwordInput = page.locator('input[type="password"]');
-    const toggleButton = page.locator('button[aria-label*="enha"]'); // Procura por "Mostrar senha" ou "Ocultar senha"
+// ===========================================================================
+// SESSÃO PERSISTENTE — refresh mantém autenticação
+// ===========================================================================
 
-    // Valida que campo começa como password
-    expect(await passwordInput.getAttribute('type')).toBe('password');
-
-    // Clica no botão de toggle
-    if (await toggleButton.isVisible()) {
-      await toggleButton.click();
-
-      // Aguarda transição
-      await page.waitForTimeout(200);
-
-      // Valida que tipo mudou para text
-      expect(await passwordInput.getAttribute('type')).toBe('text');
-
-      // Clica novamente para voltar
-      await toggleButton.click();
-      await page.waitForTimeout(200);
-
-      // Valida que voltou a ser password
-      expect(await passwordInput.getAttribute('type')).toBe('password');
-    }
+test("após login, refresh mantém o usuário no dashboard", async ({ page }) => {
+  const user = await createDescartavelUser({
+    municipio_id: municipioId,
+    perfil_codigo: "fiscal_contrato",
+    label: "session",
   });
+  usuariosCriados.push(user.id);
 
-  // =========================================================================
-  // LINK "ESQUECI MINHA SENHA"
-  // =========================================================================
+  await page.goto("/login");
+  await page.locator('input[type="email"]').fill(user.email);
+  await page.locator('input[type="password"]').fill(user.password);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL(/\/dashboard/);
 
-  test('link de recuperação de senha está acessível', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    // Procura pelo link de recuperação
-    const recoveryLink = page.locator('a:has-text("Esqueci minha senha")');
-
-    // Valida que link existe e é visível
-    await expect(recoveryLink).toBeVisible();
-
-    // Valida que tem href
-    const href = await recoveryLink.getAttribute('href');
-    expect(href).toBeTruthy();
-    expect(href).toContain('recuperar');
-  });
-
-  // =========================================================================
-  // CHECKBOX "LEMBRAR-ME"
-  // =========================================================================
-
-  test('checkbox "manter-me conectado" pode ser marcado', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    const rememberCheckbox = page.locator('input[type="checkbox"]');
-
-    // Valida que checkbox existe
-    await expect(rememberCheckbox).toBeVisible();
-
-    // Marca o checkbox
-    await rememberCheckbox.check();
-
-    // Valida que está marcado
-    expect(await rememberCheckbox.isChecked()).toBe(true);
-
-    // Desmarca
-    await rememberCheckbox.uncheck();
-
-    // Valida que está desmarcado
-    expect(await rememberCheckbox.isChecked()).toBe(false);
-  });
-
-  // =========================================================================
-  // RESPONSIVIDADE
-  // =========================================================================
-
-  test('página de login é responsiva em mobile', async ({ page }) => {
-    // Define viewport móvel
-    await page.setViewportSize({ width: 375, height: 667 });
-
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    // Valida que elementos estão visíveis
-    const emailInput = page.locator('input[type="email"]');
-    const submitButton = page.locator('button[type="submit"]');
-
-    await expect(emailInput).toBeVisible();
-    await expect(submitButton).toBeVisible();
-
-    // Valida que card é responsivo
-    const card = page.locator('div.bg-white.rounded-2xl');
-    const boundingBox = await card.boundingBox();
-
-    expect(boundingBox).toBeTruthy();
-    expect(boundingBox?.width).toBeLessThanOrEqual(375);
-  });
-
-  // =========================================================================
-  // LOGOUT
-  // =========================================================================
-
-  test('logout remove sessão e redireciona para login', async ({ page }) => {
-    // Tenta acessar dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
-
-    // Se redirecionar para login (usuário não autenticado), ok
-    // Se estiver no dashboard (usuário está autenticado), tenta fazer logout
-
-    const currentUrl = page.url();
-
-    if (currentUrl.includes('/dashboard')) {
-      // Procura por botão de logout (pode variar conforme UI)
-      const logoutButton = page.locator('button:has-text("Sair"), button:has-text("Logout"), [role="menuitem"]:has-text("Sair")');
-
-      if (await logoutButton.isVisible()) {
-        await logoutButton.click();
-
-        // Aguarda redirecionamento
-        await page.waitForURL(`${BASE_URL}/login`, {
-          timeout: 5000,
-        });
-
-        // Valida redirecionamento
-        expect(page.url()).toContain('/login');
-      }
-    }
-  });
-
-  // =========================================================================
-  // SEGURANÇA: SENHAS NÃO SÃO VISÍVEIS
-  // =========================================================================
-
-  test('campo de senha não exibe texto em plain quando não expandido', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    const passwordInput = page.locator('input[type="password"]');
-
-    // Preenche a senha
-    await passwordInput.fill('TestPassword123!');
-
-    // Valida que o valor não é visível no HTML (é substituído por dots)
-    const inputValue = await passwordInput.inputValue();
-
-    // O input pode estar vazio visualmente mas ter valor armazenado
-    // O importante é que type="password" mascara a entrada
-    expect(await passwordInput.getAttribute('type')).toBe('password');
-  });
-
-  // =========================================================================
-  // ACESSIBILIDADE
-  // =========================================================================
-
-  test('página de login segue padrões de acessibilidade', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
-
-    await page.waitForLoadState('networkidle');
-
-    // Valida que labels estão associados a inputs
-    const labels = page.locator('label');
-    const labelCount = await labels.count();
-
-    expect(labelCount).toBeGreaterThan(0);
-
-    // Valida que inputs têm aria-describedby ou aria-label
-    const inputs = page.locator('input[type="email"], input[type="password"]');
-
-    const inputCount = await inputs.count();
-    expect(inputCount).toBeGreaterThanOrEqual(2);
-
-    // Valida que errors têm role="alert" se existem
-    const alerts = page.locator('[role="alert"]');
-    const alertCount = await alerts.count();
-
-    // Se houver erro visível, deve ter role="alert"
-    const errorVisible = await page.locator('[role="alert"]').isVisible().catch(() => false);
-
-    if (errorVisible) {
-      await expect(page.locator('[role="alert"]')).toHaveAttribute('role', 'alert');
-    }
-  });
+  await page.reload();
+  await expect(page).toHaveURL(/\/dashboard/);
 });

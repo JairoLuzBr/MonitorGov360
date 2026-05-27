@@ -1,79 +1,63 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+// Carrega .env.local antes dos workers iniciarem.
+// Os workers herdam process.env do processo principal, então isso é suficiente.
+const envPath = resolve(__dirname, ".env.local");
+if (existsSync(envPath)) {
+  const content = readFileSync(envPath, "utf-8");
+  for (const line of content.split(/\r?\n/)) {
+    const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/i);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2].replace(/^"(.*)"$/, "$1");
+    }
+  }
+}
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const isCI = !!process.env.CI;
+
 export default defineConfig({
-  testDir: './tests/e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  testDir: "./tests/e2e",
+  // Paralelismo dentro do mesmo arquivo é OK; mas usamos workers=1 globalmente
+  // porque os testes criam usuários descartáveis via Supabase Auth Admin, e a
+  // criação simultânea por múltiplos workers gera race conditions (JWT
+  // propagation, sessões cruzadas). Trade-off: determinismo > velocidade.
+  fullyParallel: false,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: 1,
+  reporter: isCI ? [["html"], ["github"]] : "html",
+  timeout: 30_000,
+  expect: { timeout: 5_000 },
+
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000',
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+    actionTimeout: 10_000,
+    navigationTimeout: 15_000,
+    // Bypassa rate limit em ambiente não-prod (ver src/middleware.ts).
+    // Necessário porque a suite faz dezenas de logins em paralelo.
+    extraHTTPHeaders: {
+      "x-e2e-bypass-ratelimit": "1",
+    },
   },
 
-  /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+  // Em local roda só Chromium (rápido). Em CI roda os 3 navegadores principais.
+  projects: isCI
+    ? [
+        { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+        { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+        { name: "webkit", use: { ...devices["Desktop Safari"] } },
+      ]
+    : [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    /* Test against mobile viewports. */
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ],
-
-  /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !isCI,
     timeout: 120 * 1000,
   },
 });

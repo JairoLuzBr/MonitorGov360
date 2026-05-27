@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getClientIp, rateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 // Rotas que exigem autenticação
 const PROTECTED_PREFIXES = ["/dashboard", "/admin", "/relatorios"];
@@ -10,7 +11,57 @@ const AUTH_ROUTES = ["/login", "/cadastro", "/recuperar-senha", "/signup", "/mfa
 // Rotas públicas (não são redirecionadas)
 const PUBLIC_ROUTES = ["/", "/about", "/contato"];
 
+// Rotas com rate limit (proteção contra força bruta)
+const AUTH_RATE_LIMITED = ["/login", "/mfa", "/primeiro-acesso"];
+const SIGNUP_RATE_LIMITED = ["/signup"];
+
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isAuthPost = request.method === "POST";
+
+  // ===================================================================
+  // Rate limiting em rotas de autenticação (somente POST/Server Action)
+  //
+  // Bypass para testes E2E: aceita header `x-e2e-bypass-ratelimit` apenas
+  // quando NODE_ENV !== 'production'. Em produção esse header é ignorado.
+  // ===================================================================
+  const e2eBypass =
+    process.env.NODE_ENV !== "production" &&
+    request.headers.get("x-e2e-bypass-ratelimit") === "1";
+
+  if (isAuthPost && !e2eBypass) {
+    const ip = getClientIp(request.headers);
+    if (AUTH_RATE_LIMITED.some((r) => pathname.startsWith(r))) {
+      const result = rateLimit(`auth:${ip}`, RATE_LIMITS.auth);
+      if (!result.allowed) {
+        return new NextResponse(
+          JSON.stringify({ error: "Muitas tentativas. Aguarde um momento." }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": Math.ceil((result.resetAt - Date.now()) / 1000).toString(),
+            },
+          }
+        );
+      }
+    } else if (SIGNUP_RATE_LIMITED.some((r) => pathname.startsWith(r))) {
+      const result = rateLimit(`signup:${ip}`, RATE_LIMITS.signup);
+      if (!result.allowed) {
+        return new NextResponse(
+          JSON.stringify({ error: "Muitas tentativas. Aguarde um momento." }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": Math.ceil((result.resetAt - Date.now()) / 1000).toString(),
+            },
+          }
+        );
+      }
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -41,7 +92,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const hostname = request.headers.get("host") || "";
 
   // ===================================================================

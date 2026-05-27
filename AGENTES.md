@@ -405,7 +405,7 @@ AT — valida FCM e Realtime
 AS — auditoria data leakage
 ```
 
-### Fase 8 — Segurança Final
+### Fase 8 — Segurança Final ✅ CONCLUÍDA
 ```
 [AS + AT] em paralelo
   ↓
@@ -413,6 +413,16 @@ Security review completo
   ↓
 Testes E2E Playwright
 ```
+
+**Entregas:**
+- Headers HTTP de segurança ([next.config.ts](next.config.ts)): CSP, HSTS,
+  X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- Rate limiting em rotas de autenticação ([src/lib/rate-limit.ts](src/lib/rate-limit.ts))
+- 12 testes RLS validando isolamento multi-tenant contra Supabase real
+  ([tests/integration/rls-multi-tenant.test.ts](tests/integration/rls-multi-tenant.test.ts))
+- 25 testes E2E Playwright cobrindo: infra, autenticação (login/MFA/primeiro
+  acesso/logout) e fluxos críticos (9 páginas do dashboard + navegação)
+- Checklist de produção em [PRODUCAO.md](PRODUCAO.md)
 
 ---
 
@@ -460,16 +470,16 @@ Agent({
 |--------|------|---------------|--------|
 | A1 | 1 | Scaffold, configs | ✅ Concluído |
 | A2 | 1 | DB schema, SQL, RLS | ✅ Concluído |
-| A3 | 2 | Auth, MFA, JWT | ⏳ Próximo |
-| A4 | 3 | Dashboards, KPI | ⏳ Futuro |
-| A5 | 4 | Questionários, cron | ⏳ Futuro |
-| A6 | 5 | Evidências, upload | ⏳ Futuro |
-| A7 | 5 | Orçamento, integração | ⏳ Futuro |
-| A8 | 6 | Alertas, FCM | ⏳ Futuro |
+| A3 | 2 | Auth, MFA, JWT | ✅ Concluído |
+| A4 | 3 | Dashboards, KPI | ✅ Concluído |
+| A5 | 4 | Questionários, cron | ✅ Concluído |
+| A6 | 5 | Evidências, upload | ✅ Concluído |
+| A7 | 5 | Orçamento, integração | ✅ Concluído |
+| A8 | 6 | Alertas, FCM | ✅ Concluído |
 | A9 | 2+ | Mobile, Expo | ⏳ Adiado |
-| AT | Todas | Testes, validação | ⏳ Contínuo |
+| AT | 8 | Testes, validação | ✅ Concluído |
 | AV | Todas | Visual, UI/UX | ⏳ Contínuo |
-| AS | Todas | Segurança, RLS | ⏳ Contínuo |
+| AS | 8 | Segurança, RLS | ✅ Concluído |
 | AG | Todas | Orientação, guias | ⏳ Contínuo |
 
 ---
@@ -486,13 +496,15 @@ Agent({
 
 ## 🎯 Próximos Passos
 
-**Agora:** Fase 1 completa (Vercel deployado, build passa)
+**Agora:** Fases 1–8 concluídas. Plataforma pronta para deploy em produção.
 
-**Em seguida:**
-1. Preencher `.env.local` com credenciais Supabase + Firebase
-2. Rodar `supabase link --project-ref SEU_REF`
-3. Rodar `supabase db push` (aplicar migrações)
-4. Iniciar Fase 2 com **A3 + AS + AT + AV**
+**Antes do go-live:** seguir o [PRODUCAO.md](PRODUCAO.md) — checklist completo
+de configuração Vercel, Supabase, Firebase + smoke test pós-deploy.
+
+**Pendências reconhecidas:**
+- Mobile (A9 — Expo React Native) — adiado para pós-web
+- Pentest externo, WAF, CAPTCHA, CI/CD — listados em [PRODUCAO.md](PRODUCAO.md)
+  como hardening adicional
 
 ---
 
