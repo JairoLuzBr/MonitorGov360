@@ -10,6 +10,7 @@
     "seed-test": "npx ts-node --esm scripts/seed-test-user.ts",
     "seed-perfis": "npx ts-node --esm scripts/seed-test-users.ts",
     "check-migrations": "npx ts-node --esm scripts/check-migrations.ts",
+    "promote-test-user": "npx ts-node --esm scripts/promote-test-user.ts",
     "test": "vitest",
     "test:unit": "vitest --run",
     "test:unit:watch": "vitest --watch",
